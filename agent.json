@@ -1,0 +1,52 @@
+{
+  "$schema": "https://desirecore.net/schemas/agentfs/v1/agent-config.json",
+  "id": "30382254-1b95-405e-9cd5-0c42af0ba84a",
+  "name": "MiMo 模型余量检测",
+  "description": "定时巡检小米 MiMo 开放平台 Token Plan 的套餐额度：总量、已用量、剩余量与重置时间，余量偏低或登录态失效时主动提醒",
+  "avatar": {
+    "char": "M",
+    "color": "green"
+  },
+  "version": "1.0.0",
+  "llm": {
+    "routingMode": "smart",
+    "smart": {
+      "profile": {
+        "tier": "flagship"
+      }
+    },
+    "maxRetryDelayMs": 32000
+  },
+  "heartbeat": {
+    "enabled": false
+  },
+  "webhooks": {
+    "enabled": false
+  },
+  "session_mode": {
+    "manual": false
+  },
+  "env": {
+    "enabled": true,
+    "includeWeekday": true,
+    "includeLocalTime": true,
+    "includeSessionStart": true
+  },
+  "mcp_servers": {},
+  "capabilities": [
+    "quota-monitoring",
+    "browser-automation",
+    "scheduled-patrol"
+  ],
+  "trigger_patterns": [
+    "MiMo",
+    "mimo",
+    "小米 MiMo",
+    "Token Plan",
+    "MiMo 余量",
+    "MiMo 配额"
+  ],
+  "accepts_handoff": true,
+  "accepts_messages": true,
+  "max_concurrent_sessions": 1
+}

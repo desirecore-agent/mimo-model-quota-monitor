@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MiMo 巡检账号 ↔ 浏览器 space 映射表",
+  "description": "巡检账号与其独占的 persistent BrowserSpace 的唯一真源。SOP 第 2 步按本轮 credentialId 在这里查 spaceId，再到 list_spaces 里按 id 选（两个 space 可能同名，永远不要按名字选）。本表只在对话里「表里没有本账号或 spaceId 已经不在 list_spaces 里、确实新建了 space」时才改（定时运行不建 space、不改本表），而且只改那一行；平台报错（BROWSER_PROVIDER_UNAVAILABLE、journal is not ready、authority is sealed、*_OUTCOME_UNKNOWN 等）不是 space 坏了的证据，绝不因此新建 space 或改本表。运行结果写 mimo-quota/<credentialId>/latest.json 与 history/，不写这里。",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "accounts"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "结构版本。字段含义变化时才递增。"
+    },
+    "updatedAt": {
+      "type": "string",
+      "description": "本表最后一次修改的时刻，ISO 8601。"
+    },
+    "accounts": {
+      "type": "array",
+      "minItems": 1,
+      "description": "一个账号一行。一个账号必须独占一个 persistent space：两个小米账号的 Cookie 在同一分区里会互相覆盖。",
+      "items": {
+        "type": "object",
+        "required": [
+          "credentialId",
+          "spaceId"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "credentialId": {
+            "type": "string",
+            "description": "账号库（ManageCredentials list）里的条目 id，也是调度 prompt 指定的本轮账号，例如 mimo-main。"
+          },
+          "label": {
+            "type": "string",
+            "description": "给人看的称呼，如「账号1」。"
+          },
+          "phoneTail": {
+            "type": "string",
+            "pattern": "^[0-9]{4}$",
+            "description": "手机号后 4 位，仅用于人工核对。绝不写完整手机号。"
+          },
+          "spaceId": {
+            "type": "string",
+            "pattern": "^bsp_[0-9a-f]{32}$",
+            "description": "该账号独占的 persistent BrowserSpace id。登录态存在这个 space 的持久化分区里，跨实例重启保留。"
+          },
+          "loginVerifiedAt": {
+            "type": "string",
+            "description": "最近一次确认该 space 登录态有效（/api/v1/userProfile code=0）的时刻，ISO 8601。只供人工参考，巡检时仍以当次 userProfile 为准，不要每轮回写。"
+          },
+          "note": {
+            "type": "string",
+            "description": "给人看的备注：这个 space 的来历、注意事项。"
+          }
+        }
+      }
+    }
+  }
+}
