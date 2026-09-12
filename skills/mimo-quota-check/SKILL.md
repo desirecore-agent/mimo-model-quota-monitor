@@ -297,7 +297,9 @@ BrowserSnapshot mode='text'
 | **会话已终止** | `BROWSER_TOOL_SESSION_TERMINATED` (409) | `session_terminated` | 对话里回到第 3 步重开一次；定时运行里落盘，下一轮重新开会话。 |
 | **浏览器平台不可用** | `BROWSER_PROVIDER_UNAVAILABLE` / `journal is not ready` / `authority is sealed` / `BROWSER_JOURNAL_INTEGRITY_FAILED` | `platform_unavailable` | **不新建 space、不改 `accounts.json`**，下一轮自然重试。 |
 | **结果未知** | `*_OUTCOME_UNKNOWN` | `outcome_unknown` | **不要重放同一条命令**，按错误消息里的指引对账。 |
-| **网络失败** | 导航失败 / 快照超时 | `network` | 重试**一次**；仍失败再落阻塞，记录原始错误。 |
+| **网络失败** | `BROWSER_NAVIGATION_NETWORK_*`（域名解析 / 连接被拒或重置 / TLS / 网络超时 / 代理失败）/ `BROWSER_NAVIGATION_TIMEOUT` / `BROWSER_NAVIGATION_FAILED` / 快照超时 | `network` | 重试**一次**；仍失败再落阻塞，`detail` 照抄原始错误码。 |
+| **导航被页面跳转顶替** | `BROWSER_NAVIGATION_ABORTED` | 见动作 | **不是平台故障也不是网络失败，不要重试这条导航、更不要新建 space。** 页面在加载完成前自己跳转了（常见是未登录被带去登录页）：先 `BrowserSnapshot mode='text'` 看标签页现在停在哪个页面——是登录页就走第 3 步的登录判断分支；仍是配额/接口页就接着取数；判断不了落 `blocked.reason='other'`，`detail` 写明这个码和停留页的样子。 |
+| **导航目标越出授权范围** | `BROWSER_NAVIGATION_ORIGIN_NOT_GRANTED` / `BROWSER_NAVIGATION_SCHEME_DENIED` | 见动作 | 站点把访问跳到授权范围之外的站点（常见是另一个域名的登录页），被平台拦截——**拦截说明平台在正常工作**。同样先快照看停留页：是登录页就走登录判断分支；其余落 `blocked.reason='page_changed'`（站点改了跳转目标），`detail` 照抄错误码。**不要新建 space。** |
 | **页面改版** | 接口与页面都拿不到预期字段 | `page_changed` | **绝不推测数值。** |
 | **其他** | 以上都不是 | `other` | `detail` 写清经过。 |
 
