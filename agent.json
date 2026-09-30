@@ -5,9 +5,12 @@
   "description": "定时巡检小米 MiMo 开放平台 Token Plan 的套餐额度：总量、已用量、剩余量与重置时间，余量偏低或登录态失效时主动提醒",
   "avatar": {
     "char": "M",
-    "color": "green"
+    "color": "green",
+    "image": {
+      "path": "assets/avatar.webp"
+    }
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "llm": {
     "routingMode": "smart",
     "smart": {
