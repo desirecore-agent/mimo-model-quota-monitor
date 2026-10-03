@@ -24,7 +24,12 @@ desirecore/market
 
 **市场侧只有 pointer，不能放 `agent.json`。** 校验器要求 `agent.json`（inline）与 `entry.json`（pointer）**恰好存在一个**。
 
-**改内容 → 改本仓库；发新版 → 改市场卡片的 pin。** 用户装到的永远是卡片上 pin 的那个 commit，不是本仓库最新 `main`。
+**改内容 → 改本仓库；发新版 → 改市场卡片的 pin。** 新安装装到的是卡片上 pin 的那个 commit，不是本仓库最新 `main`。已安装用户的更新取决于客户端版本：
+
+- **v10.0.177 之后的客户端**（包含 desirecore/desirecore#3728）：只会被更新到卡片当前的 pin。`main` 上领先 pin 的提交，在市场 repin PR 合并、客户端同步到新目录之前不会送达；条目被拦、下架或与本仓库对不上时，更新暂停。
+- **v10.0.177 及更早的客户端**：仍跟随本仓库 `main` 的最新提交。`main` 上的 `agent.json#version` 一旦递增，这些用户最迟约 10 分钟内会被无人值守更新到 `main` 头，中间所有提交一并带上；版本号不变的提交不会单独推送，但会随下一次版本递增一起送达。
+
+所以在旧客户端退出使用之前，**合进 `main` 仍等于对一部分已安装用户发布**：版本递增的提交只在市场 repin PR 已准备好时合入，并紧接着合并 repin。
 
 发新版时 pin 要**三处同时改**，漏一处 CI 必红：
 
@@ -104,7 +109,7 @@ README.md / CHANGELOG.md / LICENSE
 1. 改本仓库内容；行为变化同步 `SKILL.md` / `principles.md` / 站点经验 / `references/result.schema.json` 的一致性（尤其是告警项、`blocked.reason` 取值与落盘路径），以及 USAGE 中英文与市场条目描述
 2. 递增 `agent.json#version` 与 `SKILL.md` frontmatter 的 `version`，写 `CHANGELOG.md`；用到新平台能力时同步提高市场条目的 `requiredClientVersion`
 3. 用 DesireCore 主仓的 `validateAgentConfig`（`packages/schemas/src/agent/index.ts`）校验 `agent.json`，用技能 frontmatter 解析器校验 `SKILL.md`（`type` 只能是 `procedural` / `conversational` / `meta`）
-4. 提交并推送本仓库 `main`，记下新 commit SHA
+4. 提交并推送本仓库 `main`，记下新 commit SHA。v10.0.177 及更早的客户端会在约 10 分钟内收到 `main` 上的版本递增（见 §2），这一步与下一步的 repin 要紧接着做
 5. 在 `desirecore/market` 开分支，按 §2 改 pin 三处与版本、时间字段，本地跑校验器，提 PR
 6. market PR 的 Copilot review 线程也要处理完，checks 全绿仍 `BLOCKED` 多半是线程没 resolve
 
